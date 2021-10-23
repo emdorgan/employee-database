@@ -27,6 +27,7 @@
 * [Node.js](https://nodejs.org/)
 * [Inquirer package](https://www.npmjs.com/package/inquirer)
 * [MySQL2 package](https://www.npmjs.com/package/mysql2)
+* [console.table package](https://www.npmjs.com/package/console.table)
 
 
 ## Authors
