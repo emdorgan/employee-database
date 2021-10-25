@@ -4,8 +4,6 @@
 
 ## To Do list
 
-* Write out database scheme
-* Write some seed data with XIV characters
 * Write out queries for database
 * Make Inquirer questions
 

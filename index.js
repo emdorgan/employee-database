@@ -14,3 +14,27 @@ const db = mysql.createConnection({
         },
     console.log(`Connected to the employee_db database.`)
 );
+
+function getAllDept(){
+    db.query("SELECT * FROM department", async function(err, results){
+        const fullTable = await results;
+        console.log(fullTable);
+        return fullTable;
+    });
+};
+
+function getAllRoles(){
+    db.query("SELECT * FROM employee_role", async function(err, results){
+        const fullTable = await results;
+        console.log(fullTable);
+        return fullTable;
+    });
+};
+
+function getAllEmployee(){
+    db.query("SELECT * FROM employee", async function(err, results){
+        const fullTable = await results;
+        console.log(fullTable);
+        return fullTable;
+    });
+};
