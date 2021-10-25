@@ -38,3 +38,33 @@ function getAllEmployee(){
         return fullTable;
     });
 };
+
+function addDept(deptData){
+    const sql = `INSERT INTO department (department_name)
+                VALUES (?)`
+    const params = deptData;
+    db.query(sql, params, async function(err, results){
+        if(err){
+            console.log(err);
+        }
+    });
+}
+
+// takes in an object(?) as a variable
+function addRole(roleData){
+    const sql = `INSERT INTO employee_role (title, salary, department_id)
+                VALUES (?, ?, ?)`
+    const params = [roleData.title, roleData.salary, roleData.department_id];
+    db.query(sql, params, async function(err, results){
+        if(err){
+            console.log(err);
+        }
+        await getAllRoles();
+    });
+}
+
+addRole({
+    title:'test role',
+    salary: 1000000000,
+    department_id: 1
+})
