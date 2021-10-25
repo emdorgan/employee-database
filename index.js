@@ -48,6 +48,13 @@ function addDept(deptData){
     });
 }
 
+// expected format for addRole object
+// addRole({
+//     title:'test role',
+//     salary: 1000000000,
+//     department_id: 1
+// })
+
 function addRole(roleData){
     const sql = `INSERT INTO employee_role (title, salary, department_id)
                 VALUES (?, ?, ?)`;
@@ -59,6 +66,14 @@ function addRole(roleData){
         await getAllRoles();
     });
 }
+
+// expected format for addEmployee object
+// addEmployee({
+//     first_name: 'Ryne',
+//     last_name: 'Waters',
+//     role_id: 10,
+//     manager_id: 9
+// });
 
 function addEmployee(employeeData){
     const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
@@ -75,6 +90,9 @@ function addEmployee(employeeData){
     });
 }
 
+// expected format for changeRole function
+// changeRole(3, 14);
+
 function changeRole(newRole_id, employee_id){
     const sql = `UPDATE employee SET role_id = ? WHERE id = ?`
     const params = [newRole_id, employee_id];
@@ -87,20 +105,40 @@ function changeRole(newRole_id, employee_id){
     });
 }
 
-// expected format for addRole object
-// addRole({
-//     title:'test role',
-//     salary: 1000000000,
-//     department_id: 1
-// })
+const questions = [
+    {
+        type: 'list',
+        name: 'userSelection',
+        message: "Welcome to the employee Database, please choose from the following options:",
+        choices: [
+                    'view all departments', 
+                    'view all roles',
+                    'view all employees',
+                    'add a department',
+                    'add a role',
+                    'add an employee',
+                    'update an employee'
+                ]
+    }
+];
 
-// expected format for addEmployee object
-// addEmployee({
-//     first_name: 'Ryne',
-//     last_name: 'Waters',
-//     role_id: 10,
-//     manager_id: 9
-// });
 
-// expected format for changeRole function
-// changeRole(3, 14);
+
+// main function, calls the inquirer (in prompt.js) and processes the recieved data from user
+function init(){
+    inquirer
+    .prompt(questions)
+    .then((response) => {
+        if(response.userSelection === 'view all departments'){
+            getAllDept();
+        }
+        else if(response.userSelection === 'view all roles'){
+            getAllRoles();
+        }
+        else if(response.userSelection === 'view all employees'){
+            getAllEmployees();
+        }
+    })
+}
+
+init();
