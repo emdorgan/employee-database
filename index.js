@@ -1,5 +1,3 @@
-// <----------- Pseudocode
-
 // Dependencies
 const cTable = require('console.table');
 const inquirer = require('inquirer');
@@ -31,7 +29,7 @@ function getAllRoles(){
     });
 };
 
-function getAllEmployee(){
+function getAllEmployees(){
     db.query("SELECT * FROM employee", async function(err, results){
         const fullTable = await results;
         console.log(fullTable);
@@ -41,7 +39,7 @@ function getAllEmployee(){
 
 function addDept(deptData){
     const sql = `INSERT INTO department (department_name)
-                VALUES (?)`
+                VALUES (?)`;
     const params = deptData;
     db.query(sql, params, async function(err, results){
         if(err){
@@ -50,10 +48,9 @@ function addDept(deptData){
     });
 }
 
-// takes in an object(?) as a variable
 function addRole(roleData){
     const sql = `INSERT INTO employee_role (title, salary, department_id)
-                VALUES (?, ?, ?)`
+                VALUES (?, ?, ?)`;
     const params = [roleData.title, roleData.salary, roleData.department_id];
     db.query(sql, params, async function(err, results){
         if(err){
@@ -63,8 +60,47 @@ function addRole(roleData){
     });
 }
 
-addRole({
-    title:'test role',
-    salary: 1000000000,
-    department_id: 1
-})
+function addEmployee(employeeData){
+    const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                VALUES (?, ?, ?, ?)`;
+    const params = [employeeData.first_name, 
+                    employeeData.last_name, 
+                    employeeData.role_id,
+                    employeeData.manager_id];
+    db.query(sql, params, async function(err, results){
+        if(err){
+            console.log(err);
+        }
+        await getAllEmployees();
+    });
+}
+
+function changeRole(newRole_id, employee_id){
+    const sql = `UPDATE employee SET role_id = ? WHERE id = ?`
+    const params = [newRole_id, employee_id];
+
+    db.query(sql, params, async function(err, results){
+        if(err){
+            console.log(err);
+        }
+        await getAllEmployees();
+    });
+}
+
+// expected format for addRole object
+// addRole({
+//     title:'test role',
+//     salary: 1000000000,
+//     department_id: 1
+// })
+
+// expected format for addEmployee object
+// addEmployee({
+//     first_name: 'Ryne',
+//     last_name: 'Waters',
+//     role_id: 10,
+//     manager_id: 9
+// });
+
+// expected format for changeRole function
+// changeRole(3, 14);
