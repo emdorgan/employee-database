@@ -17,16 +17,16 @@ VALUES  ("Lead Accountant", 120000, 1),
         ("Client Fulfillment", 70000, 4);
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES  ("Y'shtola", "Rhul", 4, 1),
-        ("Tataru", "Taru", 1, 2),
+VALUES  ("Y'shtola", "Rhul", 4, null),
+        ("Tataru", "Taru", 1, null),
         ("Fourchenault", "Leveilleur", 2, 2),
         ("Thancred", "Waters", 10, 1),
         ("Krile", "Mayer Baldesion", 5, 2),
-        ("Urianger", "Augurelt", 9, 6),
-        ("Minfilia", "Warde", 6, 7),
+        ("Urianger", "Augurelt", 9, null),
+        ("Minfilia", "Warde", 6, null),
         ("G'raha", "Tia", 7, 6),
-        ("Alphinaud", "Leveilleur", 3, 10),
-        ("Lysephria", "Maromyr", 3, 10),
-        ("Lyse", "Hext", 3, 10),
-        ("Papalymo", "Totolymo", 5, )
-
+        ("Lysephria", "Maromyr", 3, null),
+        ("Alphinaud", "Leveilleur", 3, 9),
+        ("Lyse", "Hext", 3, 9),
+        ("Papalymo", "Totolymo", 5, 1),
+        ("Alisae", "Leveilleur", 8, 6);
