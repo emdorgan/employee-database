@@ -15,26 +15,27 @@ const db = mysql.createConnection({
 );
 
 function getAllDept(){
-    db.query("SELECT * FROM department", async function(err, results){
-        const fullTable = await results;
-        console.log(fullTable);
-        return fullTable;
+    db.query("SELECT department_name AS department, department.id AS department_id FROM department", async function(err, results){
+        const fullDeptTable = await results;
+        console.log('----------------------------------------');
+        console.table(fullDeptTable);
     });
 };
 
 function getAllRoles(){
-    db.query("SELECT * FROM employee_role", async function(err, results){
-        const fullTable = await results;
-        console.log(fullTable);
-        return fullTable;
+    db.query("SELECT title AS job_title, employee_role.id AS role_id, department_name, salary FROM employee_role JOIN department ON employee_role.department_id = department.id", async function(err, results){
+        const fullRoleTable = await results;
+        console.log('----------------------------------------');
+        console.table(fullRoleTable);
     });
 };
 
 function getAllEmployees(){
     db.query("SELECT * FROM employee", async function(err, results){
-        const fullTable = await results;
-        console.log(fullTable);
-        return fullTable;
+        const fullEmployeeTable = await results;
+        console.log('----------------------------------------');
+        console.table(fullEmployeeTable);
+        return fullEmployeeTable;
     });
 };
 
@@ -120,7 +121,6 @@ const questions = [
                     'add an employee',
                     'update an employee'
                 ],
-        when: (answers) => answers.exit !== "exit"
     },
     {
         type: 'input',
@@ -136,7 +136,6 @@ function init(){
     inquirer
     .prompt(questions)
     .then((response) => {
-        console.log(response);
         if(response.userSelection === 'view all departments'){
             getAllDept();
         }
