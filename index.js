@@ -23,13 +23,18 @@ async function getAllDept(){
 
 async function getAllRoles(){
     const fullTable = await db.promise().query("SELECT title AS job_title, employee_role.id AS role_id, department_name, salary FROM employee_role JOIN department ON employee_role.department_id = department.id");
-        console.log('----------------------------------------');
+        console.log('--------------------------------------------------------------------------');
         console.table(fullTable[0]);
         init();
 };
 
 async function getAllEmployees(){
-    const fullTable = await db.promise().query("SELECT * FROM employee");
+    const fullTable = await db.promise().query(`SELECT e.first_name, e.last_name, e.id, employee_role.title, department.department_name, IFNULL(CONCAT (m.first_name, ' ', m.last_name), 'N/A') AS manager 
+                                                    FROM employee m 
+                                                    RIGHT JOIN employee e ON m.id = e.manager_id
+                                                    JOIN employee_role ON employee_role.id = e.role_id
+                                                    JOIN department ON employee_role.department_id = department.id
+                                                    ORDER BY e.id`);
         console.log('----------------------------------------');
         console.table(fullTable[0]);
         init();
