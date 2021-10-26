@@ -4,9 +4,10 @@
 
 ## To Do list
 
-* Format the tables
-* Get get data from user responses into the correct format
-* Make Inquirer questions
+* Make update employee function
+* write README.md
+* Make video walkthrough
+* Try and complete some bonuses
 
 ## Getting Started
 

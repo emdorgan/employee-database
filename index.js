@@ -68,12 +68,13 @@ async function addEmployee(firstName, lastName, roleId,managerId){
     init();
 }
 
-async function changeRole(newRole_id, employee_id){
+async function changeRole(newRoleId, employeeId){
     const sql = `UPDATE employee SET role_id = ? WHERE id = ?`
-    const params = [newRole_id, employee_id];
+    const params = [newRoleId, employeeId];
 
     const updatedEmployee = await db.promise().query(sql, params);
     console.log("employee role updated");
+    init();
 }
 
 async function getDeptChoices(){
@@ -100,13 +101,25 @@ async function getManagers(){
     return managerList;
 }
 
+async function getEmployees(){
+    const employeeList = await db.promise().query(`SELECT CONCAT(first_name, ' ', last_name) AS employee FROM employee ORDER BY employee.id;`);
+    const sortedRoles = [];
+    employeeList[0].forEach(element => {
+        sortedRoles.push(element.employee);
+    })
+    return sortedRoles;
+}
+
 
 
 // main function
 async function init(){
+    // make some database calls to populate user prompts with an array based on the database query
     const deptChoices = await getDeptChoices();
     const roleChoices = await getRoleChoices();
     const managerList = await getManagers();
+    const employeeChoices = await getEmployees();
+    // because managers aren't in sequentialor, we get back an object (which we will use later) and we create the prompt array here
     const managerNames = [];
     managerList.forEach(element => managerNames.push(element.manager))
     const questions = [
@@ -165,16 +178,30 @@ async function init(){
         {
             type: 'list',
             name: 'role',
-            message: "please enter the role of the employee to add",
+            message: "please select the role of the employee to add",
             choices: roleChoices,
             when: (answers) => answers.userSelection === "add an employee"
         },
         {
             type: 'list',
             name: 'manager',
-            message: "please enter the manager of the employee to add",
+            message: "please select the manager of the employee to add",
             choices: managerNames,
             when: (answers) => answers.userSelection === "add an employee"
+        },
+        {
+            type: 'list',
+            name: 'employee',
+            message: "please choose the employee that you would like to update",
+            choices: employeeChoices,
+            when: (answers) => answers.userSelection === "update an employee"
+        },
+        {
+            type: 'list',
+            name: 'newRole',
+            message: "please enter the employee's new role",
+            choices: roleChoices,
+            when: (answers) => answers.userSelection === "update an employee"
         }
     ];
     inquirer
@@ -203,7 +230,10 @@ async function init(){
             addEmployee(response.firstName, response.lastName, id, myManager.id);
         }
         else if(response.userSelection === 'update an employee'){
-            console.log("feature coming soon");
+            const employeeId = employeeChoices.indexOf(response.employee) + 1;
+            const newRoleId = roleChoices.indexOf(response.newRole) + 1;
+            changeRole(newRoleId, employeeId);
+
         }
         else{
             console.log("Exiting app. Goodbye!")
