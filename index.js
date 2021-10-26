@@ -3,8 +3,6 @@ const cTable = require('console.table');
 const { restoreDefaultPrompts } = require('inquirer');
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
-const Role = require('./lib/role');
-const Employee = require('./lib/employee');
 
 // connect to the database
 const db = mysql.createConnection({
@@ -51,18 +49,7 @@ async function addDept(deptData){
     init();
 }
 
-// expected format for addRole object
-// addRole({
-//     title:'test role',
-//     salary: 1000000000,
-//     department_id: 1
-// })
-
-
-
 async function addRole(role, salary, department){
-
-    // const deptId = await db.promise().query(`SELECT department.id FROM department WHERE department_name =?`, department);
 
     const sql = `INSERT INTO employee_role (title, salary, department_id)
                 VALUES (?, ?, ?)`;
@@ -72,27 +59,14 @@ async function addRole(role, salary, department){
     init();
 }
 
-// expected format for addEmployee object
-// addEmployee({
-//     first_name: 'Ryne',
-//     last_name: 'Waters',
-//     role_id: 10,
-//     manager_id: 9
-// });
-
-async function addEmployee(employeeData){
+async function addEmployee(firstName, lastName, roleId,managerId){
     const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
                 VALUES (?, ?, ?, ?)`;
-    const params = [employeeData.first_name, 
-                    employeeData.last_name, 
-                    employeeData.role_id,
-                    employeeData.manager_id];
+    const params = [firstName, lastName, roleId, managerId];
     const addedEmployee = await db.promise().query(sql, params);
     console.log('new employee added!');
+    init();
 }
-
-// expected format for changeRole function
-// changeRole(3, 14);
 
 async function changeRole(newRole_id, employee_id){
     const sql = `UPDATE employee SET role_id = ? WHERE id = ?`
@@ -104,17 +78,37 @@ async function changeRole(newRole_id, employee_id){
 
 async function getDeptChoices(){
     const deptList = await db.promise().query(`SELECT department_name FROM department;`)
-    const sortedArray = [];
+    const sortedDepts = [];
     deptList[0].forEach(element => {
-        sortedArray.push(element.department_name);
+        sortedDepts.push(element.department_name);
     })
-    return sortedArray;
+    return sortedDepts;
+}
+
+async function getRoleChoices(){
+    const roleList = await db.promise().query(`SELECT title FROM employee_role;`)
+    const sortedRoles = [];
+    roleList[0].forEach(element => {
+        sortedRoles.push(element.title);
+    })
+    return sortedRoles;
+}
+
+async function getManagers(){
+    let managerList = await db.promise().query(`SELECT CONCAT(first_name, ' ', last_name) AS manager, employee.id FROM employee WHERE manager_id IS NULL;`)
+    managerList = managerList[0];
+    return managerList;
 }
 
 
-// main function, calls the inquirer (in prompt.js) and processes the recieved data from user
+
+// main function
 async function init(){
-    const DeptChoices = await getDeptChoices();
+    const deptChoices = await getDeptChoices();
+    const roleChoices = await getRoleChoices();
+    const managerList = await getManagers();
+    const managerNames = [];
+    managerList.forEach(element => managerNames.push(element.manager))
     const questions = [
         {
             type: 'list',
@@ -133,13 +127,13 @@ async function init(){
         },
         {
             type: 'input',
-            name: 'dept_name',
+            name: 'deptName',
             message: "please enter the name of the department to add",
             when: (answers) => answers.userSelection === "add a department"
         },
         {
             type: 'input',
-            name: 'role_name',
+            name: 'roleName',
             message: "please enter the name of the role to add",
             when: (answers) => answers.userSelection === "add a role"
         },
@@ -153,8 +147,34 @@ async function init(){
             type: 'list',
             name: 'dept',
             message: "please enter the department of the role to add",
-            choices: DeptChoices,
+            choices: deptChoices,
             when: (answers) => answers.userSelection === "add a role"
+        },
+        {
+            type: 'input',
+            name: 'firstName',
+            message: "please enter the first name of the employee to add",
+            when: (answers) => answers.userSelection === "add an employee"
+        },
+        {
+            type: 'input',
+            name: 'lastName',
+            message: "please enter the last name of the employee to add",
+            when: (answers) => answers.userSelection === "add an employee"
+        },
+        {
+            type: 'list',
+            name: 'role',
+            message: "please enter the role of the employee to add",
+            choices: roleChoices,
+            when: (answers) => answers.userSelection === "add an employee"
+        },
+        {
+            type: 'list',
+            name: 'manager',
+            message: "please enter the manager of the employee to add",
+            choices: managerNames,
+            when: (answers) => answers.userSelection === "add an employee"
         }
     ];
     inquirer
@@ -170,15 +190,17 @@ async function init(){
             getAllEmployees();
         }
         else if(response.userSelection === 'add a department'){
-            addDept(response.dept_name);
+            addDept(response.deptName);
         }
         else if(response.userSelection === 'add a role'){
-            const ID = DeptChoices.indexOf(response.dept) + 1;
-            console.log(ID);
-            addRole(response.role_name, response.salary, ID);
+            const id = deptChoices.indexOf(response.dept) + 1;
+            addRole(response.roleName, response.salary, id);
         }
         else if(response.userSelection === 'add an employee'){
-            console.log("feature coming soon");
+            const id = roleChoices.indexOf(response.role) + 1;
+            const myManager = managerList.find(element => element.manager === response.manager);
+            console.log(myManager);
+            addEmployee(response.firstName, response.lastName, id, myManager.id);
         }
         else if(response.userSelection === 'update an employee'){
             console.log("feature coming soon");
