@@ -1,3 +1,5 @@
+-- seed data for the demonstration, using FFXIV characters
+
 INSERT INTO department (department_name)
 VALUES  ("Administration"),
         ("Engineering"),

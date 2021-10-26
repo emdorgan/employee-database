@@ -14,13 +14,16 @@ const db = mysql.createConnection({
     console.log(`Connected to the employee_db database.`)
 );
 
+// Makes a query to the database to get back all departments 
 async function getAllDept(){
         const fullTable = await db.promise().query("SELECT department_name AS department, department.id AS department_id FROM department");
         console.log('----------------------------------------');
         console.table(fullTable[0]);
+        // main function is called again after the query is performed
         init();
 };
 
+// Makes a query to the database to get back all roles
 async function getAllRoles(){
     const fullTable = await db.promise().query("SELECT title AS job_title, employee_role.id AS role_id, department_name, salary FROM employee_role JOIN department ON employee_role.department_id = department.id");
         console.log('---------------------------------------------------------');
@@ -28,6 +31,7 @@ async function getAllRoles(){
         init();
 };
 
+// Makes a query to the database to get back all employees and their relevant role, salary, department and manager (using three seperate JOIN statements)
 async function getAllEmployees(){
     const fullTable = await db.promise().query(`SELECT e.first_name, e.last_name, e.id AS employee_id, employee_role.title AS job_title, department.department_name, employee_role.salary, IFNULL(CONCAT (m.first_name, ' ', m.last_name), 'N/A') AS manager 
                                                     FROM employee m 
@@ -40,6 +44,7 @@ async function getAllEmployees(){
         init();
 };
 
+// makes an insert query to add a department to database
 async function addDept(deptData){
     const sql = `INSERT INTO department (department_name)
                 VALUES (?)`;
@@ -49,8 +54,8 @@ async function addDept(deptData){
     init();
 }
 
+// makes an insert query to add a role to the database
 async function addRole(role, salary, department){
-
     const sql = `INSERT INTO employee_role (title, salary, department_id)
                 VALUES (?, ?, ?)`;
     const params = [role, salary, department];
@@ -59,7 +64,8 @@ async function addRole(role, salary, department){
     init();
 }
 
-async function addEmployee(firstName, lastName, roleId,managerId){
+// makes an insert query to add an employee to the database
+async function addEmployee(firstName, lastName, roleId, managerId){
     const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
                 VALUES (?, ?, ?, ?)`;
     const params = [firstName, lastName, roleId, managerId];
@@ -68,6 +74,7 @@ async function addEmployee(firstName, lastName, roleId,managerId){
     init();
 }
 
+// makes an update query to change the role of a certain employee
 async function changeRole(newRoleId, employeeId){
     const sql = `UPDATE employee SET role_id = ? WHERE id = ?`
     const params = [newRoleId, employeeId];
@@ -77,6 +84,7 @@ async function changeRole(newRoleId, employeeId){
     init();
 }
 
+// makes a query to the database that gets returns all salaries of employees in a given department 
 async function viewBudget(deptData, deptName){
     const sql = `SELECT SUM(salary) AS budget 
                     FROM employee
@@ -91,6 +99,7 @@ async function viewBudget(deptData, deptName){
     init();
 }
 
+// makes a query to the database to get the current names of all departments (for use in inquirer)
 async function getDeptChoices(){
     const deptList = await db.promise().query(`SELECT department_name FROM department;`)
     const sortedDepts = [];
@@ -100,6 +109,7 @@ async function getDeptChoices(){
     return sortedDepts;
 }
 
+// makes a query to the database to get the current names of all roles (for use in inquirer)
 async function getRoleChoices(){
     const roleList = await db.promise().query(`SELECT title FROM employee_role;`)
     const sortedRoles = [];
@@ -109,12 +119,14 @@ async function getRoleChoices(){
     return sortedRoles;
 }
 
+// makes a query to the database to get the current names and associated IDs of all employees with a 'null' manager value indicating that they are themselves managers
 async function getManagers(){
     let managerList = await db.promise().query(`SELECT CONCAT(first_name, ' ', last_name) AS manager, employee.id FROM employee WHERE manager_id IS NULL;`)
     managerList = managerList[0];
     return managerList;
 }
 
+// makes a query to the database to get the current names of all employees concated together
 async function getEmployees(){
     const employeeList = await db.promise().query(`SELECT CONCAT(first_name, ' ', last_name) AS employee FROM employee ORDER BY employee.id;`);
     const sortedRoles = [];
@@ -126,16 +138,20 @@ async function getEmployees(){
 
 
 
-// main function
+// main function has to be declared async so that we can use await on the database queries to populate inqurirer
 async function init(){
+
     // make some database calls to populate user prompts with an array based on the database query
     const deptChoices = await getDeptChoices();
     const roleChoices = await getRoleChoices();
     const managerList = await getManagers();
     const employeeChoices = await getEmployees();
-    // because managers aren't in sequentialor, we get back an object (which we will use later) and we create the prompt array here
+
+    // because managers aren't in sequential order, we get back an object (which we will use later) and we create the prompt array here
     const managerNames = [];
     managerList.forEach(element => managerNames.push(element.manager))
+
+    // inqurier prompts, note that the fields are dynamic filled by our database queries which update as new dept, roles and employees are added
     const questions = [
         {
             type: 'list',
@@ -242,13 +258,16 @@ async function init(){
             addDept(response.deptName);
         }
         else if(response.userSelection === 'add a role'){
+            // because the order is presevered, we can use indexOf method to get the department id associated with the dept the user entered
+            // we do +1 since arrays start at 0 but databases start at 1 to prevent OffByOne error
             const id = deptChoices.indexOf(response.dept) + 1;
             addRole(response.roleName, response.salary, id);
         }
         else if(response.userSelection === 'add an employee'){
+            // same as above for employee role, but for manager we need to find their employee id
+            // we use the array of manager objects {name: , id: }
             const id = roleChoices.indexOf(response.role) + 1;
             const myManager = managerList.find(element => element.manager === response.manager);
-            console.log(myManager);
             addEmployee(response.firstName, response.lastName, id, myManager.id);
         }
         else if(response.userSelection === 'update an employee'){
