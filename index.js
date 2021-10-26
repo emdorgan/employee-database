@@ -3,6 +3,8 @@ const cTable = require('console.table');
 const { restoreDefaultPrompts } = require('inquirer');
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
+const Role = require('./lib/role');
+const Employee = require('./lib/employee');
 
 // connect to the database
 const db = mysql.createConnection({
@@ -23,32 +25,30 @@ async function getAllDept(){
 
 async function getAllRoles(){
     const fullTable = await db.promise().query("SELECT title AS job_title, employee_role.id AS role_id, department_name, salary FROM employee_role JOIN department ON employee_role.department_id = department.id");
-        console.log('--------------------------------------------------------------------------');
+        console.log('---------------------------------------------------------');
         console.table(fullTable[0]);
         init();
 };
 
 async function getAllEmployees(){
-    const fullTable = await db.promise().query(`SELECT e.first_name, e.last_name, e.id, employee_role.title, department.department_name, IFNULL(CONCAT (m.first_name, ' ', m.last_name), 'N/A') AS manager 
+    const fullTable = await db.promise().query(`SELECT e.first_name, e.last_name, e.id AS employee_id, employee_role.title AS job_title, department.department_name, employee_role.salary, IFNULL(CONCAT (m.first_name, ' ', m.last_name), 'N/A') AS manager 
                                                     FROM employee m 
                                                     RIGHT JOIN employee e ON m.id = e.manager_id
                                                     JOIN employee_role ON employee_role.id = e.role_id
                                                     JOIN department ON employee_role.department_id = department.id
                                                     ORDER BY e.id`);
-        console.log('----------------------------------------');
+        console.log('-----------------------------------------------------------------------------------------------------------');
         console.table(fullTable[0]);
         init();
 };
 
-function addDept(deptData){
+async function addDept(deptData){
     const sql = `INSERT INTO department (department_name)
                 VALUES (?)`;
     const params = deptData;
-    db.query(sql, params, async function(err, results){
-        if(err){
-            console.log(err);
-        }
-    });
+    const addedDept = await db.promise().query(sql, params);
+    console.log('new department added!');
+    init();
 }
 
 // expected format for addRole object
@@ -58,16 +58,18 @@ function addDept(deptData){
 //     department_id: 1
 // })
 
-function addRole(roleData){
+
+
+async function addRole(role, salary, department){
+
+    // const deptId = await db.promise().query(`SELECT department.id FROM department WHERE department_name =?`, department);
+
     const sql = `INSERT INTO employee_role (title, salary, department_id)
                 VALUES (?, ?, ?)`;
-    const params = [roleData.title, roleData.salary, roleData.department_id];
-    db.query(sql, params, async function(err, results){
-        if(err){
-            console.log(err);
-        }
-        await getAllRoles();
-    });
+    const params = [role, salary, department];
+    const addedRole = await db.promise().query(sql, params);
+    console.log('new role added!');
+    init();
 }
 
 // expected format for addEmployee object
@@ -78,63 +80,83 @@ function addRole(roleData){
 //     manager_id: 9
 // });
 
-function addEmployee(employeeData){
+async function addEmployee(employeeData){
     const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
                 VALUES (?, ?, ?, ?)`;
     const params = [employeeData.first_name, 
                     employeeData.last_name, 
                     employeeData.role_id,
                     employeeData.manager_id];
-    db.query(sql, params, async function(err, results){
-        if(err){
-            console.log(err);
-        }
-        await getAllEmployees();
-    });
+    const addedEmployee = await db.promise().query(sql, params);
+    console.log('new employee added!');
 }
 
 // expected format for changeRole function
 // changeRole(3, 14);
 
-function changeRole(newRole_id, employee_id){
+async function changeRole(newRole_id, employee_id){
     const sql = `UPDATE employee SET role_id = ? WHERE id = ?`
     const params = [newRole_id, employee_id];
 
-    db.query(sql, params, async function(err, results){
-        if(err){
-            console.log(err);
-        }
-        await getAllEmployees();
-    });
+    const updatedEmployee = await db.promise().query(sql, params);
+    console.log("employee role updated");
 }
 
-const questions = [
-    {
-        type: 'list',
-        name: 'userSelection',
-        message: "Welcome to the employee Database, please choose from the following options:",
-        choices: [
-                    'view all departments', 
-                    'view all roles',
-                    'view all employees',
-                    'add a department',
-                    'add a role',
-                    'add an employee',
-                    'update an employee',
-                    'exit application'
-                ],
-    },
-    {
-        type: 'input',
-        name: 'dept_name',
-        message: "please enter the name of the department to add",
-        when: (answers) => answers.userSelection === "add a department"
-    }
-];
+async function getDeptChoices(){
+    const deptList = await db.promise().query(`SELECT department_name FROM department;`)
+    const sortedArray = [];
+    deptList[0].forEach(element => {
+        sortedArray.push(element.department_name);
+    })
+    return sortedArray;
+}
 
 
 // main function, calls the inquirer (in prompt.js) and processes the recieved data from user
-function init(){
+async function init(){
+    const DeptChoices = await getDeptChoices();
+    const questions = [
+        {
+            type: 'list',
+            name: 'userSelection',
+            message: "Welcome to the employee Database, please choose from the following options:",
+            choices: [
+                        'view all departments', 
+                        'view all roles',
+                        'view all employees',
+                        'add a department',
+                        'add a role',
+                        'add an employee',
+                        'update an employee',
+                        'exit application'
+                    ],
+        },
+        {
+            type: 'input',
+            name: 'dept_name',
+            message: "please enter the name of the department to add",
+            when: (answers) => answers.userSelection === "add a department"
+        },
+        {
+            type: 'input',
+            name: 'role_name',
+            message: "please enter the name of the role to add",
+            when: (answers) => answers.userSelection === "add a role"
+        },
+        {
+            type: 'input',
+            name: 'salary',
+            message: "please enter the salary of the role to add",
+            when: (answers) => answers.userSelection === "add a role"
+        },
+        {
+            type: 'list',
+            name: 'dept',
+            message: "please enter the department of the role to add",
+            choices: DeptChoices,
+            when: (answers) => answers.userSelection === "add a role"
+        }
+    ];
     inquirer
     .prompt(questions)
     .then((response) => {
@@ -149,10 +171,11 @@ function init(){
         }
         else if(response.userSelection === 'add a department'){
             addDept(response.dept_name);
-            getAllDept();
         }
         else if(response.userSelection === 'add a role'){
-            console.log("feature coming soon");
+            const ID = DeptChoices.indexOf(response.dept) + 1;
+            console.log(ID);
+            addRole(response.role_name, response.salary, ID);
         }
         else if(response.userSelection === 'add an employee'){
             console.log("feature coming soon");
@@ -161,6 +184,7 @@ function init(){
             console.log("feature coming soon");
         }
         else{
+            console.log("Exiting app. Goodbye!")
             process.exit();
         }
     });

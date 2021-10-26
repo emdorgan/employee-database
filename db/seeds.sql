@@ -5,15 +5,15 @@ VALUES  ("Administration"),
         ("Sales");
 
 INSERT INTO employee_role (title, salary, department_id)
-VALUES  ("Lead Accountant", 120000, 1),
+VALUES  ("CEO", 150000, 1),
         ("Outside Consultant", 90000, 1),
-        ("Client Outreach", 75000, 4),
+        ("Communications Officer", 75000, 4),
         ("Lead Aetherologist", 100000, 3),
         ("Assistant Researcher", 60000, 3),
-        ("Marketing", 80000, 4),
+        ("Marketing Director", 80000, 4),
         ("Designer", 99000, 2),
         ("Junior Engineer", 85000, 2),
-        ("Lead Engineer", 125000, 2),
+        ("Lead Engineer", 120000, 2),
         ("Client Fulfillment", 70000, 4);
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
