@@ -14,29 +14,25 @@ const db = mysql.createConnection({
     console.log(`Connected to the employee_db database.`)
 );
 
-function getAllDept(){
-    db.query("SELECT department_name AS department, department.id AS department_id FROM department", async function(err, results){
-        const fullDeptTable = await results;
+async function getAllDept(){
+        const fullTable = await db.promise().query("SELECT department_name AS department, department.id AS department_id FROM department");
         console.log('----------------------------------------');
-        console.table(fullDeptTable);
-    });
+        console.table(fullTable[0]);
+        init();
 };
 
-function getAllRoles(){
-    db.query("SELECT title AS job_title, employee_role.id AS role_id, department_name, salary FROM employee_role JOIN department ON employee_role.department_id = department.id", async function(err, results){
-        const fullRoleTable = await results;
+async function getAllRoles(){
+    const fullTable = await db.promise().query("SELECT title AS job_title, employee_role.id AS role_id, department_name, salary FROM employee_role JOIN department ON employee_role.department_id = department.id");
         console.log('----------------------------------------');
-        console.table(fullRoleTable);
-    });
+        console.table(fullTable[0]);
+        init();
 };
 
-function getAllEmployees(){
-    db.query("SELECT * FROM employee", async function(err, results){
-        const fullEmployeeTable = await results;
+async function getAllEmployees(){
+    const fullTable = await db.promise().query("SELECT * FROM employee");
         console.log('----------------------------------------');
-        console.table(fullEmployeeTable);
-        return fullEmployeeTable;
-    });
+        console.table(fullTable[0]);
+        init();
 };
 
 function addDept(deptData){
@@ -119,7 +115,8 @@ const questions = [
                     'add a department',
                     'add a role',
                     'add an employee',
-                    'update an employee'
+                    'update an employee',
+                    'exit application'
                 ],
     },
     {
@@ -157,6 +154,9 @@ function init(){
         }
         else if(response.userSelection === 'update an employee'){
             console.log("feature coming soon");
+        }
+        else{
+            process.exit();
         }
     });
 }
