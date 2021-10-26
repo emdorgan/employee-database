@@ -77,6 +77,20 @@ async function changeRole(newRoleId, employeeId){
     init();
 }
 
+async function viewBudget(deptData, deptName){
+    const sql = `SELECT SUM(salary) AS budget 
+                    FROM employee
+                    JOIN employee_role ON employee_role.id = employee.role_id
+                    JOIN department ON employee_role.department_id = department.id
+                    WHERE department.id = ?;`;
+    const params = deptData;
+    const budget = await db.promise().query(sql, params);
+    console.log('---------------------------');
+    console.log(deptName);
+    console.table(budget[0]);
+    init();
+}
+
 async function getDeptChoices(){
     const deptList = await db.promise().query(`SELECT department_name FROM department;`)
     const sortedDepts = [];
@@ -135,6 +149,7 @@ async function init(){
                         'add a role',
                         'add an employee',
                         'update an employee',
+                        'view department budget',
                         'exit application'
                     ],
         },
@@ -159,7 +174,7 @@ async function init(){
         {
             type: 'list',
             name: 'dept',
-            message: "please enter the department of the role to add",
+            message: "please enter the department that the role belongs to",
             choices: deptChoices,
             when: (answers) => answers.userSelection === "add a role"
         },
@@ -202,6 +217,13 @@ async function init(){
             message: "please enter the employee's new role",
             choices: roleChoices,
             when: (answers) => answers.userSelection === "update an employee"
+        },
+        {
+            type: 'list',
+            name: 'budget',
+            message: "please enter the department you want to view the budget of",
+            choices: deptChoices,
+            when: (answers) => answers.userSelection === "view department budget"
         }
     ];
     inquirer
@@ -234,6 +256,10 @@ async function init(){
             const newRoleId = roleChoices.indexOf(response.newRole) + 1;
             changeRole(newRoleId, employeeId);
 
+        }
+        else if(response.userSelection === 'view department budget'){
+            const id = deptChoices.indexOf(response.budget) + 1;
+            viewBudget(id, response.budget);
         }
         else{
             console.log("Exiting app. Goodbye!")
