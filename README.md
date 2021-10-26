@@ -4,7 +4,8 @@
 
 ## To Do list
 
-* Write out queries for database
+* Format the tables
+* Get get data from user responses into the correct format
 * Make Inquirer questions
 
 ## Getting Started

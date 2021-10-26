@@ -1,5 +1,6 @@
 // Dependencies
 const cTable = require('console.table');
+const { restoreDefaultPrompts } = require('inquirer');
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 
@@ -118,10 +119,16 @@ const questions = [
                     'add a role',
                     'add an employee',
                     'update an employee'
-                ]
+                ],
+        when: (answers) => answers.exit !== "exit"
+    },
+    {
+        type: 'input',
+        name: 'dept_name',
+        message: "please enter the name of the department to add",
+        when: (answers) => answers.userSelection === "add a department"
     }
 ];
-
 
 
 // main function, calls the inquirer (in prompt.js) and processes the recieved data from user
@@ -129,6 +136,7 @@ function init(){
     inquirer
     .prompt(questions)
     .then((response) => {
+        console.log(response);
         if(response.userSelection === 'view all departments'){
             getAllDept();
         }
@@ -138,7 +146,20 @@ function init(){
         else if(response.userSelection === 'view all employees'){
             getAllEmployees();
         }
-    })
+        else if(response.userSelection === 'add a department'){
+            addDept(response.dept_name);
+            getAllDept();
+        }
+        else if(response.userSelection === 'add a role'){
+            console.log("feature coming soon");
+        }
+        else if(response.userSelection === 'add an employee'){
+            console.log("feature coming soon");
+        }
+        else if(response.userSelection === 'update an employee'){
+            console.log("feature coming soon");
+        }
+    });
 }
 
 init();
