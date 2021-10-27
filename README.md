@@ -28,6 +28,8 @@ This is a command-line application that allows the user to interact with an empl
 
 ## Screenshots
 
+![The schema and example seed data from database](demo/database.png)
+
 ![demo of adding department](demo/department-example.png)
 
 ![demo of adding employee](demo/add-employee.png)
