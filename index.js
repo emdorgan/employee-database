@@ -99,7 +99,8 @@ async function viewBudget(deptData, deptName){
     init();
 }
 
-// makes a query to the database to get the current names of all departments (for use in inquirer)
+// The following queries are made before inquirer runs, since we need this data to ask the user questions
+// makes a query to the database to get the current names of all departments
 async function getDeptChoices(){
     const deptList = await db.promise().query(`SELECT department_name FROM department;`)
     const sortedDepts = [];
@@ -109,7 +110,7 @@ async function getDeptChoices(){
     return sortedDepts;
 }
 
-// makes a query to the database to get the current names of all roles (for use in inquirer)
+// makes a query to the database to get the current names of all roles
 async function getRoleChoices(){
     const roleList = await db.promise().query(`SELECT title FROM employee_role;`)
     const sortedRoles = [];
@@ -264,8 +265,8 @@ async function init(){
             addRole(response.roleName, response.salary, id);
         }
         else if(response.userSelection === 'add an employee'){
-            // same as above for employee role, but for manager we need to find their employee id
-            // we use the array of manager objects {name: , id: }
+            // same as above for employee role, but for manager column we need to find their employee id
+            // we use the array of manager objects {name: , id: } to find the manager id associated with the name the user picked
             const id = roleChoices.indexOf(response.role) + 1;
             const myManager = managerList.find(element => element.manager === response.manager);
             addEmployee(response.firstName, response.lastName, id, myManager.id);

@@ -1,4 +1,4 @@
--- seed data for the demonstration, using FFXIV characters
+-- seed data for the demonstration, featuring characters from the critically acclaimed MMORPG Final Fantasy XIV (now with an expanded free trial including the award-winning Heavensward expansion)
 
 INSERT INTO department (department_name)
 VALUES  ("Administration"),
